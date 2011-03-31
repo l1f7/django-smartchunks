@@ -42,7 +42,7 @@ class Chunk(models.Model):
     def build_content(self, request, context):
         """Build content with builder or with default builder"""
         for builder in CHUNK_BUILDERS:
-            if builder.appropriate_key(self.key):
+            if builder.appropriate_key(self.key, chunk=self):
                 return builder.render(request, self, \
                             parent=None, context=context)
         return self.content
@@ -75,7 +75,7 @@ class InlineChunk(models.Model):
             obj = self.content_object
 
         for builder in CHUNK_BUILDERS:
-            if builder.appropriate_key(self.key):
+            if builder.appropriate_key(self.key, chunk=self, obj=obj):
                 return builder.render(request, self, \
                             parent=obj, context=context)
         return self.content

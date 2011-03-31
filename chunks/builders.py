@@ -3,7 +3,7 @@
 class ChunkBuilder(object):
     chunk_names = None
 
-    def appropriate_key(self, name):
+    def appropriate_key(self, name, chunk=None, obj=None):
         """This method may be overrided by builder to work with
         custom names of chunks.
         if self.chunk_names set to None then builder will be default
