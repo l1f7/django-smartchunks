@@ -1,12 +1,17 @@
+import logging
+
 from django.utils.importlib import import_module
 from django.conf import settings
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.core.cache import cache
+from django.db.models.signals import post_save, pre_delete
 
 from builders import ChunkBuilder
+from listeners import clear_plain_chunk_cache
 
+logger = logging.getLogger(__name__)
 
 CACHE_PREFIX = 'chunks_obj'
 
@@ -22,11 +27,17 @@ class Chunk(models.Model):
     any template with the use of a special template
     tag
     """
+    ITEM_CACHE_PREFIX = "chunk_"
+
     desc = models.CharField(max_length=255)
     key = models.CharField(\
             help_text="A unique name for this chunk of content", \
             blank=False, max_length=255, unique=True)
     content = models.TextField(blank=True)
+
+    def clear_cache(self):
+        logger.debug("Clean up chunk %s" % self.key)
+        cache.delete(Chunk.ITEM_CACHE_PREFIX + self.key)
 
     def build_content(self, request, context):
         """Build content with builder or with default builder"""
@@ -71,19 +82,50 @@ class InlineChunk(models.Model):
 
 
 class ChunksModel(object):
+    """Base class with additional methods for model which will use
+    chunks. Usage:
+        class YourCustomModel(models.Model, ChunksModel):
+            ...
+
+
+        # and at bottom of the file with models connect clear_cache callback
+        post_save.connect(clear_chunks_cache, sender=YourCustomModel)
+        pre_delete.connect(clear_chunks_cache, sender=YourCustomModel)
+    """
     @property
-    def _chunks_cache_key(self):
+    def chunks_cache_key(self):
         return "%s_%s_%d" % (
             CACHE_PREFIX,
             self._meta.object_name.lower(),
             self.id)
 
-    chunks_cache_key = _chunks_cache_key
+    def chunk_item_cache_key(self, key):
+        return "%s_%s_%d_%s" % (
+                    Chunk.ITEM_CACHE_PREFIX,
+                    self._meta.object_name.lower(),
+                    self.id,
+                    key)
 
     def clear_chunks_cache(self):
+        """Cleanup ChunksModel.chunks cache and cache
+        for appropriate template tag"""
+        logger.debug(\
+            "Clean up cache for list of chunks for %s" % unicode(self))
         cache.delete(self.chunks_cache_key)
 
+        model_type = ContentType.objects.get_for_model(self.__class__)
+        object_id = self.id
+
+        chunks = InlineChunk.objects.filter(content_type=model_type, \
+                                                object_id=object_id)
+        # cleanup all cache for all available chunks of current object
+        for ch in chunks:
+            cache.delete(self.chunk_item_cache_key(ch.key))
+
     def chunks(self, request, context):
+        """Return list of available chunks for current object
+        as python dictionary
+        """
         model_type = ContentType.objects.get_for_model(self.__class__)
         object_id = self.id
 
@@ -91,14 +133,16 @@ class ChunksModel(object):
 
         # read cache timeout, if==0 then chage will be disabled
         cache_timeout = 0
-        if hasattr(self._meta, 'chunks_cache_timeout'):
-            cache_timeout = getattr(self._meta, 'chunks_cache_timeout', 0)
+        if hasattr(self, 'ChunksMeta') \
+            and hasattr(self.ChunksMeta, 'chunks_cache_timeout'):
+            cache_timeout = getattr(self.ChunksMeta, \
+                                    'chunks_cache_timeout', 0)
             if not cache_timeout:
                 cache_timeout = 0
 
-        content = cache.get(cache_key)
+        chunks_content = cache.get(cache_key)
         chunks_content = {}
-        if not content:
+        if not chunks_content:
             chunks = InlineChunk.objects.filter(content_type=model_type, \
                                                     object_id=object_id)
             # build all chunks for this particular object
@@ -106,6 +150,7 @@ class ChunksModel(object):
                 chunks_content[ch.key] = ch.build_content(\
                                             request, context, obj=self)
             cache.set(cache_key, chunks_content, cache_timeout)
+
         return chunks_content
 
 
@@ -121,3 +166,8 @@ for cb in CHUNK_BUILDERS_LIST:
 
 # add default builder to end of list of builders
 CHUNK_BUILDERS.append(ChunkBuilder())
+
+
+# cleanup Chunk model cache
+post_save.connect(clear_plain_chunk_cache, sender=Chunk)
+pre_delete.connect(clear_plain_chunk_cache, sender=Chunk)

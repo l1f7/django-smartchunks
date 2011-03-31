@@ -14,4 +14,6 @@ class ChunkBuilder(object):
         return False
 
     def render(self, request, chunk, parent=None, context={}):
+        """This method should be overriden by custom builder to generate or
+        process content"""
         return chunk.content
