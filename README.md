@@ -64,7 +64,7 @@ is not exist.
             <div class="somedata">
                 {% object_chunk content "quote" 0 %}
             </div>
-		</div>
+        </div>
       </body>
     </html>
 

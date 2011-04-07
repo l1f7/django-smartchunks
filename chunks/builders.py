@@ -2,6 +2,12 @@
 
 class ChunkBuilder(object):
     chunk_names = None
+    ident = u'base'
+    title = u'Basic chunks builder'
+    
+    @property
+    def id(self):
+        return u'chunk=%s' % self.ident
 
     def appropriate_key(self, name, chunk=None, obj=None):
         """This method may be overrided by builder to work with
