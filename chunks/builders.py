@@ -1,10 +1,11 @@
+from django.utils.translation import ugettext_lazy as _
 
 
 class ChunkBuilder(object):
     chunk_names = None
     ident = u'base'
-    title = u'Basic chunks builder'
-    
+    title = _(u'Basic chunks builder')
+
     @property
     def id(self):
         return u'chunk=%s' % self.ident

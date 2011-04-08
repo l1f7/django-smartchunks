@@ -1,3 +1,5 @@
 django-chunks was originally developed by Clint Ecker
 
 Caching code suggested by Kevin Fricovsky (howiworkdaily.com)
+
+Inline chunks, chunk builders and admin code by Max Klymyshyn

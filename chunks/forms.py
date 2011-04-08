@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.translation import ugettext_lazy as _
 
 from models import InlineChunk, CHUNK_BUILDERS
 
@@ -12,7 +13,8 @@ for bldr in CHUNK_BUILDERS[:-1]:
 
 
 class InlineChunkForm(forms.ModelForm):
-    chunk_type = forms.ChoiceField(choices=CHUNK_BUILDERS_CHOICES, \
+    chunk_type = forms.ChoiceField(label=_(u"Chunk Type"), \
+                                   choices=CHUNK_BUILDERS_CHOICES, \
                                    required=False, \
                                    widget=forms.Select(\
                                         attrs={'class': 'chunks-type'}))

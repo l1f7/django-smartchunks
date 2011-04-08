@@ -7,6 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.core.cache import cache
 from django.db.models.signals import post_save, pre_delete
+from django.utils.translation import ugettext_lazy as _
 
 from builders import ChunkBuilder
 from listeners import clear_plain_chunk_cache
@@ -29,14 +30,14 @@ class Chunk(models.Model):
     """
     ITEM_CACHE_PREFIX = "chunk_"
 
-    desc = models.CharField(max_length=255)
-    key = models.CharField(\
-            help_text="A unique name for this chunk of content", \
+    desc = models.CharField(_(u"Description"), max_length=255)
+    key = models.CharField(_(u"Key"), \
+            help_text=_(u"A unique name for this chunk of content"), \
             blank=False, max_length=255, unique=True)
-    content = models.TextField(blank=True)
+    content = models.TextField(_(u"Content"), blank=True)
 
     def clear_cache(self):
-        logger.debug("Clean up chunk %s" % self.key)
+        logger.debug(u"Clean up chunk %s" % self.key)
         cache.delete(Chunk.ITEM_CACHE_PREFIX + self.key)
 
     def build_content(self, request, context):
@@ -50,13 +51,18 @@ class Chunk(models.Model):
     def __unicode__(self):
         return u"%s" % (self.key,)
 
+    class Meta:
+        verbose_name = _(u'Chunk')
+        verbose_name_plural = _(u'Chunks')
+
 
 class InlineChunk(models.Model):
-    desc = models.CharField(max_length=255)
-    key = models.CharField(help_text="A name for this chunk of content", \
+    desc = models.CharField(_(u"Description"), max_length=255)
+    key = models.CharField(_(u"Key"), \
+                            help_text=_("A name for this chunk of content"), \
                             blank=False, max_length=255)
-    content = models.TextField(blank=True, default='')
-    order = models.IntegerField(default=0)
+    content = models.TextField(_(u"Content"), blank=True, default='')
+    order = models.IntegerField(_(u"Order"), default=0)
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('content_type', 'object_id')
@@ -64,6 +70,9 @@ class InlineChunk(models.Model):
     class Meta:
         ordering = ['order']
         unique_together = ('key', 'content_type', 'object_id')
+
+        verbose_name = _(u'Inline Chunk')
+        verbose_name_plural = _(u'Inline Chunks')
 
     def __unicode__(self):
         return u"%s / %s" % (self.content_object, self.key)
@@ -110,7 +119,7 @@ class ChunksModel(object):
         """Cleanup ChunksModel.chunks cache and cache
         for appropriate template tag"""
         logger.debug(\
-            "Clean up cache for list of chunks for %s" % unicode(self))
+            u"Clean up cache for list of chunks for %s" % unicode(self))
         cache.delete(self.chunks_cache_key)
 
         model_type = ContentType.objects.get_for_model(self.__class__)
