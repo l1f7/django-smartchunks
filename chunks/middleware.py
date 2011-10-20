@@ -7,6 +7,6 @@ class ChunksMiddleware(object):
         request.generated_chunks = {}
         
     def process_template_response(self, request, response):
-        
+        response.context_data['generated_chunks'] = request.generated_chunks
         return response
         
