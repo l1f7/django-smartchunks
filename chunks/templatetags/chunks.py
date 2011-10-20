@@ -138,9 +138,9 @@ class ChunkNode(template.Node):
 def do_get_chunk(parser, token):
     # split_contents() knows not to split quoted strings.
     tokens = token.split_contents()
-    if len(tokens) < 2 or len(tokens) > 3:
+    if len(tokens) < 2 or len(tokens) > 4:
         raise template.TemplateSyntaxError(\
-            "%r tag should have either 2 or 3 arguments" % (tokens[0],))
+            "%r tag should have either 2, 3 or 4 arguments" % (tokens[0],))
     if len(tokens) == 2:
         tag_name, key = tokens
         cache_time = 0
