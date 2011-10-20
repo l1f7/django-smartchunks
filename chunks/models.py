@@ -11,6 +11,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from builders import ChunkBuilder
 from listeners import clear_plain_chunk_cache
+from chunks.templatetags.chunks import ChunkNode
 
 logger = logging.getLogger(__name__)
 
@@ -150,7 +151,7 @@ class ChunksModel(object):
                 cache_timeout = 0
 
         chunks_content = cache.get(cache_key)
-        chunks_content = {}
+#        chunks_content = {} # why was this here? Doesn't make sense.
         if not chunks_content:
             chunks = InlineChunk.objects.filter(content_type=model_type, \
                                                     object_id=object_id)
@@ -161,6 +162,23 @@ class ChunksModel(object):
             cache.set(cache_key, chunks_content, cache_timeout)
 
         return chunks_content
+
+def codechunk(key, cache_time=0, context={}):
+    """
+    Returns the given chunk. Use this function to place chunks in code (views, widgets, etc.)
+    """
+    try:
+        cache_key = CACHE_PREFIX + key
+        content = cache.get(cache_key)
+        if content is None:
+            c = Chunk.objects.get(key=key)
+
+            content = c.build_content(None, context)
+            cache.set(cache_key, content, int(cache_time))
+
+    except Chunk.DoesNotExist:
+        content = ''
+    return content
 
 
 # import and cache all available chunks builders

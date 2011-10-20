@@ -123,6 +123,12 @@ class ChunkNode(template.Node):
                 content = c.build_content(request, context)
                 cache.set(cache_key, content, int(self.cache_time))
 
+                # if the user is admin and / or has chunk edit permissions,
+                # wrap the chunk into a <chunk> element with an attribute that
+                # contains it's ID
+                
+                content = '<chunk cid="%d">' % (c.id,) + content + '</chunk>'
+
         except Chunk.DoesNotExist:
             content = ''
         return content
