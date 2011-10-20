@@ -135,8 +135,9 @@ class ChunkNode(template.Node):
                     request.user.id == 999 and \
                     self.wrap: # TODO permissions
                     content = '<chunk cid="%d">' % (c.id,) + content + '</chunk>'
-            
-            request.generated_chunks.append(c)
+
+            if 'generated_chunks' in request.__dict__:
+                request.generated_chunks.append(c)
 
         except Chunk.DoesNotExist:
             content = ''
@@ -145,7 +146,8 @@ class ChunkNode(template.Node):
                 self.wrap: # TODO permissions
                 content = '<chunk ckey="%s" class="newchunk">' % (self.key,) + content + '</chunk>'
             
-            request.generated_chunks.append(self.key)
+            if 'generated_chunks' in request.__dict__:
+                request.generated_chunks.append(self.key)
         
         return content
 
