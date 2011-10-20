@@ -131,7 +131,7 @@ class ChunkNode(template.Node):
                 # if CHUNKS_WRAP is True,
                 # wrap the chunk into a <chunk> element with an attribute that
                 # contains it's ID
-                if getattr(settings, 'CHUNKS_WRAP', False) and self.wrap: # TODO permissions
+                if getattr(settings, 'CHUNKS_WRAP', False) and self.wrap:
                     content = '<chunk cid="%d">' % (c.id,) + content + '</chunk>'
 
             if 'generated_chunks' in request.__dict__:
