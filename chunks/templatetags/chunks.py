@@ -133,7 +133,7 @@ class ChunkNode(template.Node):
         except Chunk.DoesNotExist:
             content = ''
             if request.user.id == 999 and self.wrap: # TODO permissions
-                content = '<chunk ckey="%s" class="newchunk">' % (c.key,) + content + '</chunk>'
+                content = '<chunk ckey="%s" class="newchunk">' % (self.key,) + content + '</chunk>'
             
         return content
 
