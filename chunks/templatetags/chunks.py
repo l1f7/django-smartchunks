@@ -22,15 +22,18 @@ CONTEXT_IMPROPERLY_CONFIGURED = lambda: ImproperlyConfigured(\
                     "to settings.CONTEXT_PROCESSORS: `request` variable "\
                     "is required by `chunks` app")
 
-
 class ObjChunkNode(template.Node):
-    def __init__(self, obj, key, cache_time=0, default_chunk=None):
+    def __init__(self, obj, key, cache_time=0, default_chunk=None, wrap=False):
         self.obj = template.Variable(obj)
         self.key = key
         self.cache_time = cache_time
         self.default_chunk = default_chunk
+        self.wrap = wrap
 
     def render(self, context):
+        """
+        TODO wrapping
+        """
         try:
             obj = self.obj.resolve(context)
             cache_key = obj.chunk_item_cache_key(self.key)
@@ -139,6 +142,10 @@ class ChunkNode(template.Node):
 
 
 def do_get_chunk(parser, token):
+    """
+    Tokens:
+    wrap cache_time
+    """
     # split_contents() knows not to split quoted strings.
     tokens = token.split_contents()
     if len(tokens) < 2 or len(tokens) > 4:
@@ -149,10 +156,10 @@ def do_get_chunk(parser, token):
         cache_time = 0
         wrap = False
     if len(tokens) == 3:
-        tag_name, key, cache_time = tokens
-        wrap = False
+        tag_name, key, wrap = tokens
+        cache_time = 0
     if len(tokens) == 4:
-        tag_name, key, cache_time, wrap = tokens
+        tag_name, key, wrap, cache_time = tokens
     # Check to see if the key is properly double/single quoted
     if not (key[0] == key[-1] and key[0] in ('"', "'")):
         raise template.TemplateSyntaxError( \
@@ -163,19 +170,27 @@ def do_get_chunk(parser, token):
 
 
 def do_get_object_chunk(parser, token):
+    """
+    Tokens:
+    wrap cache_time default_chunk
+    """    
     # split_contents() knows not to split quoted strings.
     tokens = token.split_contents()
     default_chunk = None
-    if len(tokens) < 2 or len(tokens) > 5:
+    if len(tokens) < 2 or len(tokens) > 6:
         raise template.TemplateSyntaxError, \
             "%r tag should have either 3 or 5 arguments" % (tokens[0],)
     if len(tokens) == 3:
         tag_name, obj, key = tokens
         cache_time = 0
+        wrap = False
     if len(tokens) == 4:
-        tag_name, obj, key, cache_time = tokens
+        tag_name, obj, key, wrap = tokens
+        cache_time = 0
     if len(tokens) == 5:
-        tag_name, obj, key, cache_time, default_chunk = tokens
+        tag_name, obj, key, wrap, cache_time = tokens
+    if len(tokens) == 6:
+        tag_name, obj, key, wrap, cache_time, default_chunk = tokens
         if not (default_chunk[0] == default_chunk[-1] \
                     and default_chunk[0] in ("'", '"')):
             raise template.TemplateSyntaxError("Default chunk argument "\
@@ -187,7 +202,8 @@ def do_get_object_chunk(parser, token):
             "%r tag's argument should be in quotes" % tag_name)
     # Send key without quotes and caching time
     return ObjChunkNode(obj, key[1:-1], cache_time, \
-                                default_chunk=default_chunk)
+                                default_chunk=default_chunk,
+                                wrap=wrap)
 
 
 def do_get_object_chunks_list(parser, token):
