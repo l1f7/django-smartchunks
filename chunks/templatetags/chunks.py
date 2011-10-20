@@ -132,7 +132,6 @@ class ChunkNode(template.Node):
                 # wrap the chunk into a <chunk> element with an attribute that
                 # contains it's ID
                 if getattr(settings, 'CHUNKS_WRAP', False) and \
-                    request.user.id == 999 and \
                     self.wrap: # TODO permissions
                     content = '<chunk cid="%d">' % (c.id,) + content + '</chunk>'
 
@@ -142,7 +141,6 @@ class ChunkNode(template.Node):
         except Chunk.DoesNotExist:
             content = ''
             if getattr(settings, 'CHUNKS_WRAP', False) and \
-                request.user.id == 999 and \
                 self.wrap: # TODO permissions
                 content = '<chunk ckey="%s" class="newchunk">' % (self.key,) + content + '</chunk>'
             
