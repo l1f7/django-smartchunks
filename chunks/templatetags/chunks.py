@@ -112,14 +112,14 @@ class ChunkNode(template.Node):
 
     def render(self, context):
         try:
+            request = context.get('request', None)
+            if not request:
+                raise CONTEXT_IMPROPERLY_CONFIGURED()
+
             cache_key = CACHE_PREFIX + self.key
             content = cache.get(cache_key)
             if content is None:
                 c = Chunk.objects.get(key=self.key)
-
-                request = context.get('request', None)
-                if not request:
-                    raise CONTEXT_IMPROPERLY_CONFIGURED()
 
                 content = c.build_content(request, context)
                 cache.set(cache_key, content, int(self.cache_time))
