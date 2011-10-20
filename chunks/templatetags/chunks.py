@@ -24,7 +24,7 @@ CONTEXT_IMPROPERLY_CONFIGURED = lambda: ImproperlyConfigured(\
                     "is required by `chunks` app")
 
 class ObjChunkNode(template.Node):
-    def __init__(self, obj, key, cache_time=0, default_chunk=None, wrap=True):
+    def __init__(self, obj, key, cache_time=0, default_chunk=None, wrap='True'):
         self.obj = template.Variable(obj)
         self.key = key
         self.cache_time = cache_time
@@ -109,7 +109,7 @@ class ObjChunksListNode(template.Node):
 
 
 class ChunkNode(template.Node):
-    def __init__(self, key, cache_time=0, wrap=True):
+    def __init__(self, key, cache_time=0, wrap='True'):
         self.key = key
         self.cache_time = cache_time
         self.wrap = wrap
