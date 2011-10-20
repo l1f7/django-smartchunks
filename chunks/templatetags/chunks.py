@@ -131,8 +131,7 @@ class ChunkNode(template.Node):
                 # if CHUNKS_WRAP is True,
                 # wrap the chunk into a <chunk> element with an attribute that
                 # contains it's ID
-                if getattr(settings, 'CHUNKS_WRAP', False) and \
-                    self.wrap: # TODO permissions
+                if getattr(settings, 'CHUNKS_WRAP', False) and self.wrap: # TODO permissions
                     content = '<chunk cid="%d">' % (c.id,) + content + '</chunk>'
 
             if 'generated_chunks' in request.__dict__:
@@ -140,8 +139,7 @@ class ChunkNode(template.Node):
 
         except Chunk.DoesNotExist:
             content = ''
-            if getattr(settings, 'CHUNKS_WRAP', False) and \
-                self.wrap: # TODO permissions
+            if getattr(settings, 'CHUNKS_WRAP', False) and self.wrap: 
                 content = '<chunk ckey="%s" class="newchunk">' % (self.key,) + content + '</chunk>'
             
             if 'generated_chunks' in request.__dict__:
@@ -175,7 +173,7 @@ def do_get_chunk(parser, token):
             "%r tag's argument should be in quotes" % tag_name)
     # Send key without quotes and caching time
     
-    return ChunkNode(key[1:-1], cache_time, wrap)
+    return ChunkNode(key[1:-1], cache_time=cache_time, wrap=wrap)
 
 
 def do_get_object_chunk(parser, token):
