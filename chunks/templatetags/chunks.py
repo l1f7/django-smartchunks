@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib.contenttypes.models import ContentType
 from django import template
@@ -23,7 +24,7 @@ CONTEXT_IMPROPERLY_CONFIGURED = lambda: ImproperlyConfigured(\
                     "is required by `chunks` app")
 
 class ObjChunkNode(template.Node):
-    def __init__(self, obj, key, cache_time=0, default_chunk=None, wrap=False):
+    def __init__(self, obj, key, cache_time=0, default_chunk=None, wrap=True):
         self.obj = template.Variable(obj)
         self.key = key
         self.cache_time = cache_time
@@ -108,7 +109,7 @@ class ObjChunksListNode(template.Node):
 
 
 class ChunkNode(template.Node):
-    def __init__(self, key, cache_time=0, wrap=False):
+    def __init__(self, key, cache_time=0, wrap=True):
         self.key = key
         self.cache_time = cache_time
         self.wrap = wrap
@@ -127,15 +128,19 @@ class ChunkNode(template.Node):
                 content = c.build_content(request, context)
                 cache.set(cache_key, content, int(self.cache_time))
 
-                # if the user is admin and / or has chunk edit permissions,
+                # if CHUNKS_WRAP is True,
                 # wrap the chunk into a <chunk> element with an attribute that
                 # contains it's ID
-                if request.user.id == 999 and self.wrap: # TODO permissions
+                if getattr(settings, 'CHUNKS_WRAP', False) and \
+                    request.user.id == 999 and \
+                    self.wrap: # TODO permissions
                     content = '<chunk cid="%d">' % (c.id,) + content + '</chunk>'
 
         except Chunk.DoesNotExist:
             content = ''
-            if request.user.id == 999 and self.wrap: # TODO permissions
+            if getattr(settings, 'CHUNKS_WRAP', False) and \
+                request.user.id == 999 and \
+                self.wrap: # TODO permissions
                 content = '<chunk ckey="%s" class="newchunk">' % (self.key,) + content + '</chunk>'
             
         return content
