@@ -30,7 +30,7 @@ class Chunk(models.Model):
     """
     ITEM_CACHE_PREFIX = "chunk_"
 
-    desc = models.CharField(_(u"Description"), max_length=255)
+    description = models.CharField(_(u"Description"), max_length=255)
     key = models.CharField(_(u"Key"), \
             help_text=_(u"A unique name for this chunk of content"), \
             blank=False, max_length=255, unique=True)
@@ -57,7 +57,7 @@ class Chunk(models.Model):
 
 
 class InlineChunk(models.Model):
-    desc = models.CharField(_(u"Description"), max_length=255)
+    description = models.CharField(_(u"Description"), max_length=255)
     key = models.CharField(_(u"Key"), \
                             help_text=_("A name for this chunk of content"), \
                             blank=False, max_length=255)
