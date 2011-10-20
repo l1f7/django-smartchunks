@@ -11,7 +11,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from builders import ChunkBuilder
 from listeners import clear_plain_chunk_cache
-from chunks.templatetags.chunks import ChunkNode
 
 logger = logging.getLogger(__name__)
 
