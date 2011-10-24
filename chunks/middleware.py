@@ -19,7 +19,7 @@ class ChunksMiddleware(object):
                                 'content': chunk.content,
                                 'description': chunk.description})
                 
-            out = render_to_string("chunks_sidebar.html", {'generated_chunks': gchunks})
+            out = render_to_string("chunks/chunks_sidebar.html", {'generated_chunks': gchunks})
 #            response.context_data['generated_chunks'] = gchunks
             print out
         except AttributeError:
