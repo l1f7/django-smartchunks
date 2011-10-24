@@ -9,7 +9,7 @@ class ChunksMiddleware(object):
         if getattr(settings, 'CHUNKS_WRAP', False):
             request.generated_chunks = []
         
-    def process_template_response(self, request, response):
+    def process_response(self, request, response):
         try:
             gchunks = []
             for chunk in request.generated_chunks:
