@@ -14,13 +14,23 @@ class ChunksMiddleware(object):
         try:
             gchunks = []
             for chunk in request.generated_chunks:
-                gchunks.append({'id': chunk.id,
+                if 'id' in chunk.__dict__:
+                    gchunks.append({'id': chunk.id,
                                 'key': chunk.key,
                                 'content': chunk.content,
-                                'description': chunk.description})
-                
-            out = render_to_string("chunks/chunks_sidebar.html", {'generated_chunks': gchunks})
-            response.content = response.content.replace('</body>', '%s</body>' % (out))
+                                'description': chunk.description,
+                                'wrapped': chunk.wrapped,
+                                'url': '/admin/chunks/chunk/',
+                                })
+                else:
+                    # new chunk
+                    gchunks.append({'key': chunk['key'],
+                                    'wrapped': chunk['wrapped'],
+                                    'url': '/admin/chunks/chunk/add',
+                                    })
+            response.content = response.content.replace('</body>', '%s</body>' % 
+                                                        (render_to_string("chunks/chunks_sidebar.html", 
+                                                                          {'generated_chunks': gchunks})))            
         except AttributeError:
             pass
         return response

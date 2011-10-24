@@ -57,7 +57,7 @@ class Chunk(models.Model):
 
 
 class InlineChunk(models.Model):
-    description = models.CharField(_(u"Description"), max_length=255)
+    desc = models.CharField(_(u"Description"), max_length=255)
     key = models.CharField(_(u"Key"), \
                             help_text=_("A name for this chunk of content"), \
                             blank=False, max_length=255)

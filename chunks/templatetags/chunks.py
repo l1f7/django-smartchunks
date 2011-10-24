@@ -132,18 +132,29 @@ class ChunkNode(template.Node):
                 # wrap the chunk into a <chunk> element with an attribute that
                 # contains it's ID
                 if getattr(settings, 'CHUNKS_WRAP', False) and self.wrap == 'True':
-                    content = '<chunk cid="%d">' % (c.id,) + content + '</chunk>'
+                    c.wrapped = True
+                    content = '<chunk cid="%d">' % (c.id,) + content + \
+                              '</chunk><div class="chunkmenu"><a class="button" href="%s%d">edit</a></div>' % \
+                              ('/admin/chunks/chunk/', c.id)
+                else:
+                    c.wrapped = False
 
             if 'generated_chunks' in request.__dict__:
                 request.generated_chunks.append(c)
 
         except Chunk.DoesNotExist:
             content = ''
+            c = {'key': self.key,
+                 'wrapped': False
+                 }
             if getattr(settings, 'CHUNKS_WRAP', False) and self.wrap == 'True': 
-                content = '<chunk ckey="%s" class="newchunk">' % (self.key,) + content + '</chunk>'
-            
+                content = '<chunk ckey="%s" class="newchunk">' % (self.key,) + content + \
+                '</chunk><div class="chunkmenu"><a class="button" href="%s">add</a></div>' % \
+                ('/admin/chunks/chunk/add')
+                c['wrapped'] = True
+
             if 'generated_chunks' in request.__dict__:
-                request.generated_chunks.append(self.key)
+                request.generated_chunks.append(c)
         
         return content
 
