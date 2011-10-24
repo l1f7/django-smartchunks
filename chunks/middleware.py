@@ -20,8 +20,7 @@ class ChunksMiddleware(object):
                                 'description': chunk.description})
                 
             out = render_to_string("chunks/chunks_sidebar.html", {'generated_chunks': gchunks})
-#            response.context_data['generated_chunks'] = gchunks
-            print out
+            response = response.content.replace('</body>', '%s</body>' % (out))
         except AttributeError:
             pass
         return response
