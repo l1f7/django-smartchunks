@@ -1,0 +1,24 @@
+{% if generated_chunks %}
+	<div id="generated_chunks">
+	{% for chunk in request.generated_chunks %}
+		<div class="chunk">
+		<table>
+		{% if chunk.id %}
+			<tr>
+			<td>{{ chunk.key }}</td>
+			<td>{{ chunk.content }}</td>
+			<td>{{ chunk.description }}</td>
+			<td><a href="/admin/chunks/chunk/{{ chunk.id }}">edit</a></td>
+			</tr>
+		{% else %}
+			<tr>
+			<td collspan="4">
+			{{ chunk }} - <a href="/admin/chunks/chunk/add?key={{ chunk }}">add new</a>
+			</td>
+			</tr>
+		{% endif %}
+		</table>
+		</div>
+	{% endfor %}			
+	</div>
+{% endif %}

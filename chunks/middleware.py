@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.template.loader import render_to_string
 
 class ChunksMiddleware(object):
     """
@@ -18,7 +19,9 @@ class ChunksMiddleware(object):
                                 'content': chunk.content,
                                 'description': chunk.description})
                 
-            response.context_data['generated_chunks'] = gchunks
+            out = render_to_string("chunks_sidebar.html", {'generated_chunks': gchunks})
+#            response.context_data['generated_chunks'] = gchunks
+            print out
         except AttributeError:
             pass
         return response
