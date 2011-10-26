@@ -1,27 +1,19 @@
 import logging
 
-from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
 from django.contrib.contenttypes.models import ContentType
 from django import template
 from django.db import models
 from django.core.cache import cache
-
+from chunks.models import CONTEXT_IMPROPERLY_CONFIGURED, render_chunk
 
 logger = logging.getLogger(__name__)
 
 register = template.Library()
 
-
 Chunk = models.get_model('chunks', 'chunk')
 InlineChunk = models.get_model('chunks', 'inlinechunk')
 
 CACHE_PREFIX = Chunk.ITEM_CACHE_PREFIX
-
-CONTEXT_IMPROPERLY_CONFIGURED = lambda: ImproperlyConfigured(\
-                    "Please, add `django.core.context_processors.request` \n"\
-                    "to settings.CONTEXT_PROCESSORS: `request` variable "\
-                    "is required by `chunks` app")
 
 class ObjChunkNode(template.Node):
     def __init__(self, obj, key, cache_time=0, default_chunk=None, wrap='True'):
@@ -107,7 +99,6 @@ class ObjChunksListNode(template.Node):
         context[context_name] = chunks
         return ""
 
-
 class ChunkNode(template.Node):
     def __init__(self, key, cache_time=0, wrap='True'):
         self.key = key
@@ -115,49 +106,7 @@ class ChunkNode(template.Node):
         self.wrap = wrap
 
     def render(self, context):
-        try:
-            request = context.get('request', None)
-            if not request:
-                raise CONTEXT_IMPROPERLY_CONFIGURED()
-
-            cache_key = CACHE_PREFIX + self.key
-            content = cache.get(cache_key)
-            if content is None:
-                c = Chunk.objects.get(key=self.key)
-
-                content = c.build_content(request, context)
-                cache.set(cache_key, content, int(self.cache_time))
-
-                # if CHUNKS_WRAP is True,
-                # wrap the chunk into a <chunk> element with an attribute that
-                # contains it's ID
-                if getattr(settings, 'CHUNKS_WRAP', False) and self.wrap == 'True':
-                    c.wrapped = True
-                    content = '<chunk cid="%d">' % (c.id,) + content + \
-                              '</chunk><div class="chunkmenu"><a class="button" href="%s%d">edit</a></div>' % \
-                              ('/admin/chunks/chunk/', c.id)
-                else:
-                    c.wrapped = False
-
-            if 'generated_chunks' in request.__dict__:
-                request.generated_chunks.append(c)
-
-        except Chunk.DoesNotExist:
-            content = ''
-            c = {'key': self.key,
-                 'wrapped': False
-                 }
-            if getattr(settings, 'CHUNKS_WRAP', False) and self.wrap == 'True': 
-                content = '<chunk ckey="%s" class="newchunk">' % (self.key,) + content + \
-                '</chunk><div class="chunkmenu"><a class="button" href="%s">add</a></div>' % \
-                ('/admin/chunks/chunk/add')
-                c['wrapped'] = True
-
-            if 'generated_chunks' in request.__dict__:
-                request.generated_chunks.append(c)
-        
-        return content
-
+        return render_chunk(context, self.key, self.wrap, self.cache_time)
 
 def do_get_chunk(parser, token):
     """

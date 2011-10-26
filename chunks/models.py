@@ -11,6 +11,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from builders import ChunkBuilder
 from listeners import clear_plain_chunk_cache
+from django.core.exceptions import ImproperlyConfigured
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +21,10 @@ CACHE_PREFIX = 'chunks_obj'
 CHUNK_BUILDERS_LIST = getattr(settings, 'CHUNK_BUILDERS', [])
 CHUNK_BUILDERS = []
 
+CONTEXT_IMPROPERLY_CONFIGURED = lambda: ImproperlyConfigured(\
+                    "Please, add `django.core.context_processors.request` \n"\
+                    "to settings.CONTEXT_PROCESSORS: `request` variable "\
+                    "is required by `chunks` app")
 
 class Chunk(models.Model):
     """
@@ -30,11 +35,11 @@ class Chunk(models.Model):
     """
     ITEM_CACHE_PREFIX = "chunk_"
 
-    description = models.CharField(_(u"Description"), max_length=255)
     key = models.CharField(_(u"Key"), \
             help_text=_(u"A unique name for this chunk of content"), \
-            blank=False, max_length=255, unique=True)
+            blank=False, max_length=255, unique=True)    
     content = models.TextField(_(u"Content"), blank=True)
+    description = models.CharField(_(u"Description"), max_length=255)
 
     def clear_cache(self):
         logger.debug(u"Clean up chunk %s" % self.key)
@@ -166,18 +171,46 @@ def codechunk(key, cache_time=0, context={}):
     """
     Returns the given chunk. Use this function to place chunks in code (views, widgets, etc.)
     """
+    return render_chunk(context, key, False, cache_time)
+
+def render_chunk(context, key, wrap=True, cache_time=0):
     try:
+        request = context.get('request', None)
+        if not request:
+            raise CONTEXT_IMPROPERLY_CONFIGURED()
+
         cache_key = CACHE_PREFIX + key
         content = cache.get(cache_key)
         if content is None:
             c = Chunk.objects.get(key=key)
 
-            content = c.build_content(None, context)
+            content = c.build_content(request, context)
             cache.set(cache_key, content, int(cache_time))
 
     except Chunk.DoesNotExist:
-        content = ''
-    return content
+        c = Chunk(key=key,
+                  content=key,
+                  description='')
+        
+        c.save()
+        
+        content = key
+        
+    # if CHUNKS_WRAP is True,
+    # wrap the chunk into a <chunk> element with an attribute that
+    # contains it's ID
+    if getattr(settings, 'CHUNKS_WRAP', False) and wrap == 'True': 
+        content = '<chunk cid="%d" class="newchunk">' % (c.id,) + content + \
+        '</chunk><div class="chunkmenu"><a class="button" href="%s%d">edit</a></div>' % \
+        ('/admin/chunks/chunk/', c.id)
+        c.wrapped = True
+    else:
+        c.wrapped = False
+
+    if 'generated_chunks' in request.__dict__:
+        request.generated_chunks.append(c)
+    
+    return content    
 
 
 # import and cache all available chunks builders
