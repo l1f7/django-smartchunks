@@ -162,13 +162,15 @@ class ChunksModel(object):
 
         return chunks_content
 
-def codechunk(key, cache_time=0, context={}):
+def codechunk(key, wrap=False, cache_time=0, context={}):
     """
     Returns the given chunk. Use this function to place chunks in code (views, widgets, etc.)
+    If you want to add it to the chunk sidebar, you need to put the current request in the context:
+    { 'request': request }
     """
     from chunks.templatetags.chunks import render_chunk
     
-    return render_chunk(context, key, False, cache_time)
+    return render_chunk(context, key, wrap, cache_time)
 
 # import and cache all available chunks builders
 for cb in CHUNK_BUILDERS_LIST:

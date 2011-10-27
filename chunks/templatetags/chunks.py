@@ -196,7 +196,8 @@ def render_chunk(context, key, wrap=True, cache_time=0):
     try:
         request = context.get('request', None)
         if not request:
-            raise CONTEXT_IMPROPERLY_CONFIGURED()
+#            raise CONTEXT_IMPROPERLY_CONFIGURED()
+            pass # TODO can it be like this?
 
         cache_key = CACHE_PREFIX + key
         content = cache.get(cache_key)
@@ -226,7 +227,7 @@ def render_chunk(context, key, wrap=True, cache_time=0):
     else:
         c.wrapped = False
 
-    if 'generated_chunks' in request.__dict__:
+    if request and 'generated_chunks' in request.__dict__:
         request.generated_chunks.append(c)
     
     return content
