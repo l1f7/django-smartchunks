@@ -6,6 +6,7 @@ from django.db import models
 from django.core.cache import cache
 from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
+from django.template.defaultfilters import stringfilter
 
 logger = logging.getLogger(__name__)
 
@@ -191,8 +192,22 @@ def do_get_object_chunks_list(parser, token):
     # Send key without quotes and caching time
     return ObjChunksListNode(obj, context_name=context_name)
 
+@stringfilter
+def do_filter_chunk(value, arg):
+    """
+    Chunk filter - for chunks that need to be inside other template tags.
+    arg should contain the wrap attribute if don't want to wrap it in 
+    CHUNK_WRAP mode.
+    """
+    
+    # how to add the context?
+    return render_chunk({}. value, arg, 0)
 
 def render_chunk(context, key, wrap=True, cache_time=0):
+    """
+    Renders the chunk.
+    wrap = True will wrap the chunk in <chunk> tags. 
+    """
     try:
         request = context.get('request', None)
         if not request:
@@ -232,6 +247,7 @@ def render_chunk(context, key, wrap=True, cache_time=0):
     
     return content
 
+register.filter('chunk', do_filter_chunk)
 register.tag('chunk', do_get_chunk)
 register.tag('object_chunk', do_get_object_chunk)
 register.tag('object_chunks_list', do_get_object_chunks_list)
