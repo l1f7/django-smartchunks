@@ -193,15 +193,15 @@ def do_get_object_chunks_list(parser, token):
     return ObjChunksListNode(obj, context_name=context_name)
 
 @stringfilter
-def do_filter_chunk(value, arg):
+def do_filter_chunk(value, request):
     """
     Chunk filter - for chunks that need to be inside other template tags.
-    arg should contain the wrap attribute if don't want to wrap it in 
+    request should be explicitly passed in the filter!
     CHUNK_WRAP mode.
     """
-    
+
     # how to add the context?
-    return render_chunk({}. value, arg, 0)
+    return render_chunk({'request': request}, value, False, 0)
 
 def render_chunk(context, key, wrap='True', cache_time=0):
     """
@@ -234,7 +234,7 @@ def render_chunk(context, key, wrap='True', cache_time=0):
     # if CHUNKS_WRAP is True,
     # wrap the chunk into a <chunk> element with an attribute that
     # contains it's ID
-    if getattr(settings, 'CHUNKS_WRAP', False) and wrap == 'True': 
+    if getattr(settings, 'CHUNKS_WRAP', False) and (wrap == 'True' or wrap == True): 
         content = '<chunk cid="%d" class="newchunk">%s</chunk><div class="chunkmenu" id="chm_%d"><a class="button" href="%s%d">edit</a></div>' % (c.id, content, c.id, '/admin/chunks/chunk/', c.id)
         c.wrapped = True
     else:
