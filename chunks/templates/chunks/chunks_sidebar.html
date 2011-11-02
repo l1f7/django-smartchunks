@@ -1,0 +1,18 @@
+{% if generated_chunks %}
+	<div id="chunks">
+	<ul>
+	{% for chunk in generated_chunks %}
+		<li>
+		{% if chunk.id %}
+			<a rel="{{ chunk.id }}" href="{{ chunk.url }}{{ chunk.id }}">
+				<strong>{{ chunk.key }}</strong>
+				<em>{{ chunk.content }}</em>
+			</a>
+		{% else %}
+			<a rel="{{ chunk.key }}" href="{{ chunk.url }}">ADD NEW</a>
+		{% endif %}
+		</li>
+	{% endfor %}
+	</ul>			
+	</div>
+{% endif %}
