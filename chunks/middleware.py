@@ -11,6 +11,9 @@ class ChunksMiddleware(object):
             request.generated_chunks = []
         
     def process_response(self, request, response):
+        if not getattr(settings, 'CHUNKS_WRAP', False):
+            return
+        
         try:
             gchunks = []
             for chunk in request.generated_chunks:
@@ -33,5 +36,7 @@ class ChunksMiddleware(object):
                                                                           {'generated_chunks': gchunks})))            
         except AttributeError:
             pass
+        except UnicodeDecodeError as e:
+            print e
         return response
         

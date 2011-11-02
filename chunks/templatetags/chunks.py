@@ -128,7 +128,7 @@ def do_get_chunk(parser, token):
     if len(tokens) == 2:
         tag_name, key = tokens
         cache_time = 0
-        wrap = False
+        wrap = 'True'
     if len(tokens) == 3:
         tag_name, key, wrap = tokens
         cache_time = 0
@@ -203,7 +203,7 @@ def do_filter_chunk(value, arg):
     # how to add the context?
     return render_chunk({}. value, arg, 0)
 
-def render_chunk(context, key, wrap=True, cache_time=0):
+def render_chunk(context, key, wrap='True', cache_time=0):
     """
     Renders the chunk.
     wrap = True will wrap the chunk in <chunk> tags. 
@@ -235,9 +235,7 @@ def render_chunk(context, key, wrap=True, cache_time=0):
     # wrap the chunk into a <chunk> element with an attribute that
     # contains it's ID
     if getattr(settings, 'CHUNKS_WRAP', False) and wrap == 'True': 
-        content = '<chunk cid="%d" class="newchunk">' % (c.id,) + content + \
-        '</chunk><div class="chunkmenu"><a class="button" href="%s%d">edit</a></div>' % \
-        ('/admin/chunks/chunk/', c.id)
+        content = '<chunk cid="%d" class="newchunk">%s</chunk><div class="chunkmenu" id="chm_%d"><a class="button" href="%s%d">edit</a></div>' % (c.id, content, c.id, '/admin/chunks/chunk/', c.id)
         c.wrapped = True
     else:
         c.wrapped = False
