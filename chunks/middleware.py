@@ -12,7 +12,7 @@ class ChunksMiddleware(object):
         
     def process_response(self, request, response):
         if not getattr(settings, 'CHUNKS_WRAP', False):
-            return
+            return response
         
         try:
             gchunks = []

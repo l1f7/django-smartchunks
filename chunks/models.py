@@ -162,6 +162,14 @@ class ChunksModel(object):
 
         return chunks_content
 
+class CodeChunk(object):
+    def __init__(self, key, wrap):
+        self.key = key
+        self.wrap = wrap
+        
+    def __str__(self):
+        return codechunk(self.key, self.wrap)
+
 def codechunk(key, wrap=False, cache_time=0, context={}):
     """
     Returns the given chunk. Use this function to place chunks in code (views, widgets, etc.)
