@@ -161,25 +161,15 @@ class ChunksModel(object):
 
         return chunks_content
 
-class CodeChunk(object):
-    """
-    The static variable codechunks holds all the codechunks!
-    """
-    codechunks = []
-    
-    def __init__(self, key, wrap=True):
-        self.key = key
-        self.wrap = wrap
-        CodeChunk.codechunks.append(self)
 
-def codechunk(key, wrap=False, cache_time=0, context={}):
+def codechunk(key, wrap=False):
     """
     Returns the given chunk. Use this function to place chunks in code (views, widgets, etc.)
     """    
-    CodeChunk(key, wrap)
-    from chunks.templatetags.chunks import render_chunk
+    from chunks.templatetags.chunks import render_chunk, CodeChunk
     
-    return render_chunk(context, key, wrap, cache_time)
+    CodeChunk(key, wrap)
+    return render_chunk({}, key, wrap)
 
 # import and cache all available chunks builders
 for cb in CHUNK_BUILDERS_LIST:

@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.template.loader import render_to_string
-from chunks.models import CodeChunk, Chunk
+from chunks.models import Chunk
+from chunks.templatetags.chunks import CodeChunk
 
 class ChunksMiddleware(object):
     """
@@ -47,7 +48,9 @@ class ChunksMiddleware(object):
                 
             response.content = response.content.replace('</body>', '%s</body>' % 
                                                         (render_to_string("chunks/chunks_sidebar.html", 
-                                                                          {'generated_chunks': gchunks})))            
+                                                                          {'generated_chunks': gchunks}))) 
+            
+            CodeChunk.codechunks = []           
         except AttributeError:
             pass
         except UnicodeDecodeError as e:

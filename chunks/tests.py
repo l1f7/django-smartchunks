@@ -38,9 +38,8 @@ class ChunkTagTestCase(TestCase):
         self.assertEqual(len(Chunk.objects.all()), 2)
         
     def test_chunk_filter(self):
-        # can't test this with a request, but the filter should look like:
-        # "xxx"|chunk:request
-        # it can't be wrapped yet...
+        # 1 = wrap
+        # 0 = don't wrap
         rendered = render_template('{% load chunks %}{{ "testchunk1"|chunk:0 }}')
         self.assertEqual(rendered, self.chunk1.content)
                         

@@ -192,16 +192,27 @@ def do_get_object_chunks_list(parser, token):
     # Send key without quotes and caching time
     return ObjChunksListNode(obj, context_name=context_name)
 
+class CodeChunk(object):
+    """
+    The static variable codechunks holds all the codechunks!
+    """
+    codechunks = []
+    
+    def __init__(self, key, wrap=True):
+        self.key = key
+        self.wrap = wrap
+        CodeChunk.codechunks.append(self)
+
 @stringfilter
-def do_filter_chunk(value, request):
+def do_filter_chunk(value, wrap):
     """
     Chunk filter - for chunks that need to be inside other template tags.
     request should be explicitly passed in the filter!
     CHUNK_WRAP mode.
     """
 
-    # how to add the context?
-    return render_chunk({'request': request}, value, False, 0)
+    CodeChunk(value, wrap)
+    return render_chunk({}, value, wrap, 0)
 
 def render_chunk(context, key, wrap='True', cache_time=0):
     """
@@ -234,7 +245,7 @@ def render_chunk(context, key, wrap='True', cache_time=0):
     # if CHUNKS_WRAP is True,
     # wrap the chunk into a <chunk> element with an attribute that
     # contains it's ID
-    if getattr(settings, 'CHUNKS_WRAP', False) and (wrap == 'True' or wrap == True): 
+    if getattr(settings, 'CHUNKS_WRAP', False) and (wrap == 'True' or wrap == True or wrap == 1): 
         content = '<chunk cid="%d" class="newchunk">%s</chunk><div class="chunkmenu" id="chm_%d"><a class="button" href="%s%d">edit</a></div>' % (c.id, content, c.id, '/admin/chunks/chunk/', c.id)
         c.wrapped = True
     else:
