@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.template.loader import render_to_string
+from chunks.models import CodeChunk, Chunk
 
 class ChunksMiddleware(object):
     """
@@ -31,6 +32,19 @@ class ChunksMiddleware(object):
                                     'wrapped': chunk['wrapped'],
                                     'url': '/admin/chunks/chunk/add',
                                     })
+                    
+            # codechunks
+            for chunk in CodeChunk.codechunks:
+                ch = Chunk.objects.get(key=chunk.key)
+                if ch:
+                    gchunks.append({'id': ch.id,
+                                    'key': ch.key,
+                                    'content': ch.content,
+                                    'description': ch.description,
+                                    'wrapped': chunk.wrap,
+                                    'url': '/admin/chunks/chunk/',
+                                    })
+                
             response.content = response.content.replace('</body>', '%s</body>' % 
                                                         (render_to_string("chunks/chunks_sidebar.html", 
                                                                           {'generated_chunks': gchunks})))            

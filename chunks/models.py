@@ -12,7 +12,6 @@ from django.utils.translation import ugettext_lazy as _
 from builders import ChunkBuilder
 from listeners import clear_plain_chunk_cache
 
-
 logger = logging.getLogger(__name__)
 
 CACHE_PREFIX = 'chunks_obj'
@@ -163,19 +162,21 @@ class ChunksModel(object):
         return chunks_content
 
 class CodeChunk(object):
-    def __init__(self, key, wrap):
+    """
+    The static variable codechunks holds all the codechunks!
+    """
+    codechunks = []
+    
+    def __init__(self, key, wrap=True):
         self.key = key
         self.wrap = wrap
-        
-    def __str__(self):
-        return codechunk(self.key, self.wrap)
+        CodeChunk.codechunks.append(self)
 
 def codechunk(key, wrap=False, cache_time=0, context={}):
     """
     Returns the given chunk. Use this function to place chunks in code (views, widgets, etc.)
-    If you want to add it to the chunk sidebar, you need to put the current request in the context:
-    { 'request': request }
-    """
+    """    
+    CodeChunk(key, wrap)
     from chunks.templatetags.chunks import render_chunk
     
     return render_chunk(context, key, wrap, cache_time)
