@@ -11,6 +11,7 @@ class ChunkTagTestCase(TestCase):
     
 #    fixtures = ["chunks_initial_data.json"]
     
+# test of commit
     def setUp(self):
         self.chunk1 = Chunk(key='testchunk1',
                             content='I LIKE PIE',
