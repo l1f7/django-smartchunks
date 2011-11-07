@@ -46,14 +46,14 @@ class ChunksMiddleware(object):
                                     'url': '/admin/chunks/chunk/',
                                     })
                 
-            response.content = response.content.replace('</body>', '%s</body>' % 
-                                                        (render_to_string("chunks/chunks_sidebar.html", 
-                                                                          {'generated_chunks': gchunks}))) 
+            table = render_to_string("chunks/chunks_sidebar.html", {'generated_chunks': gchunks})
+            response.content = response.content.replace('</body>', '%s</body>' % (table.encode('utf-8'))) 
             
             CodeChunk.codechunks = []           
         except AttributeError:
             pass
         except UnicodeDecodeError as e:
             print e
+            print table
         return response
         
