@@ -120,6 +120,12 @@ def do_get_chunk(parser, token):
     Tokens:
     wrap cache_time
     """
+    
+    try:
+        cache_time = settings.CHUNKS_CACHE_TIME
+    except AttributeError:
+        cache_time = 300
+    
     # split_contents() knows not to split quoted strings.
     tokens = token.split_contents()
     if len(tokens) < 2 or len(tokens) > 4:
@@ -127,11 +133,9 @@ def do_get_chunk(parser, token):
             "%r tag should have either 2, 3 or 4 arguments" % (tokens[0],))
     if len(tokens) == 2:
         tag_name, key = tokens
-        cache_time = 0
         wrap = 'True'
     if len(tokens) == 3:
         tag_name, key, wrap = tokens
-        cache_time = 0
     if len(tokens) == 4:
         tag_name, key, wrap, cache_time = tokens
     # Check to see if the key is properly double/single quoted
@@ -214,7 +218,7 @@ def do_filter_chunk(value, wrap):
     CodeChunk(value, wrap)
     return render_chunk({}, value, wrap, 0)
 
-def render_chunk(context, key, wrap='True', cache_time=0):
+def render_chunk(context, key, wrap='True', cache_time=100):
     """
     Renders the chunk.
     wrap = True will wrap the chunk in <chunk> tags. 
@@ -230,8 +234,12 @@ def render_chunk(context, key, wrap='True', cache_time=0):
         if content is None:
             c = Chunk.objects.get(key=key)
 
-            content = c.build_content(request, context)
-            cache.set(cache_key, content, int(cache_time))
+            content = {'id': c.id,
+                        'key': c.key,
+                        'content': c.build_content(request, context),
+                        'description': c.description,
+                      }
+            cache.set(cache_key, content, int(cache_time))            
 
     except Chunk.DoesNotExist:
         c = Chunk(key=key,
@@ -240,22 +248,33 @@ def render_chunk(context, key, wrap='True', cache_time=0):
         
         c.save()
         
-        content = key
+        content = {'id': c.id,
+                   'key': c.key,
+                   'content': c.build_content(request, context),
+                   'description': c.description,
+                  }
         
     # if CHUNKS_WRAP is True,
     # wrap the chunk into a <chunk> element with an attribute that
     # contains it's ID
-    if getattr(settings, 'CHUNKS_WRAP', False) and (wrap == 'True' or wrap == True or wrap == 1): 
-        content = '<chunk cid="%d" class="newchunk">%s</chunk><div class="chunkmenu" id="chm_%d"><a class="button" href="%s%d">edit</a></div>' % (c.id, content, c.id, '/admin/chunks/chunk/', c.id)
-        c.wrapped = True
+    if getattr(settings, 'CHUNKS_WRAP', False) and (wrap == 'True' or wrap == True or wrap == 1):
+        content['original'] = content['content']
+        content['content'] = '<chunk cid="%d" class="newchunk">%s</chunk><div class="chunkmenu" id="chm_%d"><a class="button" href="%s%d">edit</a></div>' \
+                                % (content['id'], 
+                                 content['content'], 
+                                 content['id'], 
+                                 '/admin/chunks/chunk/', 
+                                 content['id'])
+        content['wrapped'] = True
     else:
-        c.wrapped = False
+        content['original'] = content['content']
+        content['wrapped'] = False
 
     if request and 'generated_chunks' in request.__dict__:
         if c not in  request.generated_chunks:
-            request.generated_chunks.append(c)
+            request.generated_chunks.append(content)
     
-    return content
+    return content['content']
 
 register.filter('chunk', do_filter_chunk)
 register.tag('chunk', do_get_chunk)

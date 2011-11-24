@@ -43,6 +43,11 @@ class ChunkTagTestCase(TestCase):
         # 0 = don't wrap
         rendered = render_template('{% load chunks %}{{ "testchunk1"|chunk:0 }}')
         self.assertEqual(rendered, self.chunk1.content)
+        
+    def test_chunk_caching(self):
+        # a cached chunk should not make a database connection
+        
+        pass
                         
 def render_template(content):
     t = Template(content)

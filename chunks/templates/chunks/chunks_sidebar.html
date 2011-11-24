@@ -6,7 +6,7 @@
 		{% if chunk.id %}
 			<a rel="{{ chunk.id }}" href="{{ chunk.url }}{{ chunk.id }}">
 				<strong>{{ chunk.key }}</strong>
-				<em>{{ chunk.content }}</em>
+				<em>{{ chunk.original }}</em>
 			</a>
 		{% else %}
 			<a rel="{{ chunk.key }}" href="{{ chunk.url }}">ADD NEW</a>
