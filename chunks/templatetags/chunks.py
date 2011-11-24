@@ -271,7 +271,7 @@ def render_chunk(context, key, wrap='True', cache_time=100):
         content['wrapped'] = False
 
     if request and 'generated_chunks' in request.__dict__:
-        if c not in  request.generated_chunks:
+        if content not in  request.generated_chunks:
             request.generated_chunks.append(content)
     
     return content['content']
