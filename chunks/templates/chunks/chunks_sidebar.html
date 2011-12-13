@@ -4,7 +4,7 @@
 	{% for chunk in generated_chunks %}
 		<li>
 		{% if chunk.id %}
-			<a rel="{{ chunk.id }}" href="{{ chunk.url }}{{ chunk.id }}">
+			<a rel="{{ chunk.id }}" href="{{ chunk.url }}/{{ chunk.id }}">
 				<strong>{{ chunk.key }}</strong>
 				<em>{{ chunk.original }}</em>
 			</a>

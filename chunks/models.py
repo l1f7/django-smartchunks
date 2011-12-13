@@ -50,6 +50,13 @@ class Chunk(models.Model):
     def __unicode__(self):
         return u"%s" % (self.key,)
 
+    def save(self, force_insert=False, force_update=False, using=None):
+        
+        # replace spaces with _ and make the key lowercase - caching precautions
+        self.key = self.key.replace(' ', '_').lower()
+        
+        super(Chunk, self).save(force_insert, force_update, using)
+
     class Meta:
         verbose_name = _(u'Chunk')
         verbose_name_plural = _(u'Chunks')
