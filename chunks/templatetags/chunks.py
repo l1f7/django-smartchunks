@@ -286,3 +286,25 @@ register.filter('chunk', do_filter_chunk)
 register.tag('chunk', do_get_chunk)
 register.tag('object_chunk', do_get_object_chunk)
 register.tag('object_chunks_list', do_get_object_chunks_list)
+
+
+@register.simple_tag
+def chunk_lookup(the_dict, key):
+    """
+    If the chunks are loaded by the context processor, they're
+    already available in the dict ``CHUNKS`` but if they have
+    a hypen in the name, they can't be pulled out.
+
+    This will result in far fewer queries if you use chunks a lot.
+
+    {% chunk_lookup CHUNKS "phone-number" %}
+
+    Try to fetch from the dict, and if it's not found return an
+    empty string.
+    """
+    return the_dict.get(key, '')
+
+
+@register.filter
+def keyvalue(dict, key):
+    return dict[key]
