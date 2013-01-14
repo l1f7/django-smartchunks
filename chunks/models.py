@@ -20,6 +20,7 @@ CACHE_PREFIX = 'chunks_obj'
 CHUNK_BUILDERS_LIST = getattr(settings, 'CHUNK_BUILDERS', [])
 CHUNK_BUILDERS = []
 
+
 class Chunk(models.Model):
     """
     A Chunk is a piece of content associated
@@ -31,7 +32,7 @@ class Chunk(models.Model):
 
     key = models.CharField(_(u"Key"), \
             help_text=_(u"A unique name for this chunk of content"), \
-            blank=False, max_length=255, unique=True)    
+            blank=False, max_length=255, unique=True)
     content = models.TextField(_(u"Content"), blank=True)
     description = models.CharField(_(u"Description"), max_length=255)
 
@@ -51,10 +52,10 @@ class Chunk(models.Model):
         return u"%s" % (self.key,)
 
     def save(self, force_insert=False, force_update=False, using=None):
-        
+
         # replace spaces with _ and make the key lowercase - caching precautions
         self.key = self.key.replace(' ', '_').lower()
-        
+
         super(Chunk, self).save(force_insert, force_update, using)
 
     class Meta:
@@ -172,9 +173,9 @@ class ChunksModel(object):
 def codechunk(key, wrap=False):
     """
     Returns the given chunk. Use this function to place chunks in code (views, widgets, etc.)
-    """    
+    """
     from chunks.templatetags.chunks import render_chunk, CodeChunk
-    
+
     CodeChunk(key, wrap)
     return render_chunk({}, key, wrap)
 

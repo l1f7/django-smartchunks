@@ -3,6 +3,7 @@ from django.template.loader import render_to_string
 from chunks.models import Chunk
 from chunks.templatetags.chunks import CodeChunk
 
+
 class ChunksMiddleware(object):
     """
     Monitors all chunks that are created on this request
@@ -11,11 +12,11 @@ class ChunksMiddleware(object):
     def process_request(self, request):
         if getattr(settings, 'CHUNKS_WRAP', False):
             request.generated_chunks = []
-        
+
     def process_response(self, request, response):
         if not getattr(settings, 'CHUNKS_WRAP', False):
             return response
-        
+
         try:
             gchunks = []
             for chunk in request.generated_chunks:
@@ -36,7 +37,7 @@ class ChunksMiddleware(object):
 #                                    'url': '/admin/chunks/chunk/add',
 #                                    })
                     pass
-                    
+
             # codechunks
             for chunk in CodeChunk.codechunks:
                 # TODO caching!
@@ -49,15 +50,14 @@ class ChunksMiddleware(object):
                                     'wrapped': chunk.wrap,
                                     'url': '/admin/chunks/chunk/',
                                     })
-                
+
             table = render_to_string("chunks/chunks_sidebar.html", {'generated_chunks': gchunks})
-            response.content = response.content.replace('</body>', '%s</body>' % (table.encode('utf-8'))) 
-            
-            CodeChunk.codechunks = []           
+            response.content = response.content.replace('</body>', '%s</body>' % (table.encode('utf-8')))
+
+            CodeChunk.codechunks = []
         except AttributeError:
             pass
         except UnicodeDecodeError as e:
             print e
             print table
         return response
-        
